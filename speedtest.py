@@ -38,8 +38,9 @@ TIMEOUT = 60  # seconds per request
 
 def fetch(url):
     """Download url fully and return (bytes_count, elapsed_seconds)."""
+    request = urllib.request.Request(url, headers={"User-Agent": "speedtest-cli/1.0"})
     start = time.perf_counter()
-    with urllib.request.urlopen(url, timeout=TIMEOUT, context=SSL_CONTEXT) as response:
+    with urllib.request.urlopen(request, timeout=TIMEOUT, context=SSL_CONTEXT) as response:
         data = response.read()
     elapsed = time.perf_counter() - start
     return len(data), elapsed
