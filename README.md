@@ -1,34 +1,36 @@
-# Internet Speed Test (CLI)
+# Тест скорости интернета (консольный скрипт)
 
-A small console script that measures download speed by fetching a given URL
-( for example a heavy image ) 10 times in a row and timing each request.
+Небольшой консольный скрипт, который измеряет скорость скачивания: делает
+10 последовательных запросов к указанному адресу (например, к тяжёлой
+картинке), дожидается полного ответа на каждый и выводит результаты.
 
-## Requirements
+## Требования
 
-- Python 3.8+ (only the standard library is used, no `pip install` needed)
+- Python 3.8+ (используется только стандартная библиотека, `pip install` не нужен).
 
-## Run
+## Запуск
 
 ```bash
 python3 speedtest.py <URL>
 ```
 
-Example:
+Пример:
 
 ```bash
 python3 speedtest.py https://example.com/heavy-image.jpg
 ```
 
-The script makes 10 sequential requests, waits for the full response body on
-each one, then prints the average request time, total downloaded volume and
-the download speed.
+Скрипт делает 10 последовательных запросов, полностью считывает тело ответа
+на каждом из них, затем печатает среднее время запроса, общий объём
+скачанных данных и скорость скачивания.
 
-## Units
+## Единицы измерения
 
-- Request time: seconds (s)
-- Downloaded volume: bytes (and megabytes, 1 MB = 1 000 000 bytes)
-- Download speed: **megabytes per second (MB/s)**, where 1 MB = 1 000 000 bytes.
-  The equivalent in megabits per second (Mbps) is also printed (1 byte = 8 bits).
+- Время запроса — секунды (с).
+- Объём скачанных данных — байты (и мегабайты, 1 МБ = 1 000 000 байт).
+- Скорость скачивания — **мегабайты в секунду (МБ/с)**, где 1 МБ = 1 000 000 байт.
+  Дополнительно выводится эквивалент в мегабитах в секунду (Мбит/с)
+  (1 байт = 8 бит).
 
-Speed is computed as total downloaded bytes divided by total elapsed time
-across all 10 requests.
+Скорость вычисляется как общий объём скачанных байт, разделённый на
+суммарное время всех 10 запросов.
