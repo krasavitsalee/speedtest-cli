@@ -18,7 +18,7 @@ def make_ssl_context():
         try:
             ctx = ssl.create_default_context(cafile=path)
             return ctx
-        except (FileNotFoundError, ssl.SSLError):
+        except (OSError, ssl.SSLError):
             continue
     # Fall back to default (may work on some platforms) or unverified as last resort.
     try:
@@ -83,4 +83,8 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\nInterrupted by user.")
+        sys.exit(130)
