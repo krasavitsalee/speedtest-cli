@@ -70,7 +70,7 @@ class TestRun(unittest.TestCase):
         args = argparse.Namespace(
             url="https://example.com/x", count=2, timeout=10, chunk_size=1024,
             retries=1, retry_delay=0.0, proxy=None, header=[], progress=False,
-            output="text", output_file=None,
+            output="text", output_file=None, save_dir=None,
         )
         rc, rows, total_bytes, times, *_ = speedtest.run(args)
         self.assertEqual(rc, 0)
@@ -85,7 +85,7 @@ class TestRun(unittest.TestCase):
         args = argparse.Namespace(
             url="https://example.com/x", count=2, timeout=10, chunk_size=1024,
             retries=1, retry_delay=0.0, proxy=None, header=[], progress=False,
-            output="text", output_file=None,
+            output="text", output_file=None, save_dir=None,
         )
         rc, rows, total_bytes, times, *_ = speedtest.run(args)
         self.assertEqual(len(times), 1)
@@ -99,7 +99,7 @@ class TestRun(unittest.TestCase):
         args = argparse.Namespace(
             url="https://example.com/x", count=2, timeout=10, chunk_size=1024,
             retries=1, retry_delay=0.0, proxy=None, header=[], progress=False,
-            output="text", output_file=None,
+            output="text", output_file=None, save_dir=None,
         )
         rc, *_ = speedtest.run(args)
         self.assertEqual(rc, 1)

@@ -39,6 +39,7 @@ Main flags:
 - `--progress` — show download progress
 - `--output {text,json,csv}` — output format (default text)
 - `--output-file` — write json/csv to a file
+- `--save-dir` — save each downloaded response body to a directory (request_01.bin, ...)
 
 The script makes N sequential requests, fully reads each response body, then
 prints the average request time, total downloaded volume and the download

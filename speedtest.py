@@ -11,6 +11,7 @@ import ssl
 import urllib.request
 import urllib.error
 import urllib.parse
+import os
 
 REQUESTS = 10
 TIMEOUT = 60          # seconds per request
@@ -75,20 +76,25 @@ def _make_request(url, headers):
         "User-Agent": "speedtest-cli/1.0",
         "Accept": "*/*",
         "Accept-Encoding": "identity",  # keep byte count == network bytes
+        "Cache-Control": "no-cache, no-store, max-age=0",
+        "Pragma": "no-cache",
     }
     req_headers.update(headers or {})
     return urllib.request.Request(url, headers=req_headers)
 
 
 def fetch(url, opener, headers, timeout, chunk_size, retries, retry_delay,
-          progress=False):
+          progress=False, save_path=None):
     """Download url fully (in chunks) and return (bytes_count, elapsed_seconds)."""
     last_error = None
     for attempt in range(1, retries + 1):
+        out_file = None
         try:
             start = time.perf_counter()
             total = 0
             request = _make_request(url, headers)
+            if save_path:
+                out_file = open(save_path, "wb")
             with opener.open(request, timeout=timeout) as response:
                 content_length = response.headers.get("Content-Length")
                 total_len = int(content_length) if content_length and content_length.isdigit() else None
@@ -97,6 +103,8 @@ def fetch(url, opener, headers, timeout, chunk_size, retries, retry_delay,
                     if not chunk:
                         break
                     total += len(chunk)
+                    if out_file is not None:
+                        out_file.write(chunk)
                     if progress:
                         if total_len:
                             pct = min(100.0, total / total_len * 100)
@@ -106,18 +114,25 @@ def fetch(url, opener, headers, timeout, chunk_size, retries, retry_delay,
                         else:
                             sys.stdout.write(f"\r  downloaded {total} bytes")
                         sys.stdout.flush()
+            if out_file is not None:
+                out_file.close()
+                out_file = None
             if progress:
                 sys.stdout.write("\n")
                 sys.stdout.flush()
             elapsed = time.perf_counter() - start
             return total, elapsed
         except urllib.error.HTTPError as exc:
+            if out_file is not None:
+                out_file.close()
             last_error = exc
             if (exc.code >= 500 or exc.code == 429) and attempt < retries:
                 time.sleep(retry_delay * (2 ** (attempt - 1)))
                 continue
             raise
         except (urllib.error.URLError, TimeoutError, OSError) as exc:
+            if out_file is not None:
+                out_file.close()
             last_error = exc
             if attempt < retries:
                 time.sleep(retry_delay * (2 ** (attempt - 1)))
@@ -128,6 +143,8 @@ def fetch(url, opener, headers, timeout, chunk_size, retries, retry_delay,
 
 def run(args):
     url = _validate_url(args.url)
+    if args.save_dir:
+        os.makedirs(args.save_dir, exist_ok=True)
     opener = _build_opener(args.proxy)
     headers = {}
     for h in (args.header or []):
@@ -137,7 +154,10 @@ def run(args):
         headers[key.strip()] = val.strip()
 
     print(f"Target: {url}")
-    print(f"Requests: {args.count} (retries per request: {args.retries})\n")
+    print(f"Requests: {args.count} (retries per request: {args.retries})")
+    if args.save_dir:
+        print(f"Save dir: {args.save_dir}")
+    print()
 
     total_bytes = 0
     times = []
@@ -146,9 +166,13 @@ def run(args):
 
     for i in range(1, args.count + 1):
         try:
+            save_path = None
+            if args.save_dir:
+                save_path = os.path.join(args.save_dir, f"request_{i:02d}.bin")
             size, elapsed = fetch(
                 url, opener, headers, args.timeout, args.chunk_size,
                 args.retries, args.retry_delay, progress=args.progress,
+                save_path=save_path,
             )
         except Exception as exc:  # noqa: BLE001
             failures += 1
@@ -228,6 +252,8 @@ def main():
                         help="output format (default: text)")
     parser.add_argument("--output-file", default=None,
                         help="write json/csv output to file instead of stdout")
+    parser.add_argument("--save-dir", default=None,
+                        help="directory to save each downloaded response (optional)")
     args = parser.parse_args()
 
     if args.count < 1:
