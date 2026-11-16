@@ -52,3 +52,5 @@ python3 speedtest.py https://example.com/heavy-image.jpg
 - `speedtest.py` — скрипт.
 - `README.md` — инструкция и единицы.
 - `.gitignore` — исключает служебные файлы (`.idea/`, `__pycache__/`, `.venv/`).
+
+English version: see `README.en.md`.
