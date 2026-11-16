@@ -1,7 +1,9 @@
 # Internet Speed Test (CLI)
 
+[![Tests](https://github.com/krasavitsalee/speedtest-cli/actions/workflows/tests.yml/badge.svg)](https://github.com/krasavitsalee/speedtest-cli/actions/workflows/tests.yml)
+
 A small console script that measures download speed by fetching a given URL
-(e.g. a heavy image) 10 times in a row and timing each request.
+(e.g. a heavy image) N times in a row and timing each request.
 
 ## Requirements
 
@@ -19,15 +21,29 @@ Example:
 python3 speedtest.py https://example.com/heavy-image.jpg
 ```
 
-Options:
+By default 10 requests are made. Extra options:
 
 ```bash
 python3 speedtest.py <URL> -n 5 --timeout 30 --progress --output json --output-file result.json
 ```
 
-The script makes N sequential requests (default 10), fully reads each response
-body, then prints the average request time, total downloaded volume and the
-download speed.
+Main flags:
+
+- `-n, --count` — number of requests (default 10)
+- `--timeout` — per-request timeout in seconds (default 60)
+- `--chunk-size` — read chunk size in bytes (default 65536)
+- `--retries` — retries per request (default 3)
+- `--retry-delay` — base retry delay in seconds (default 1.0, exponential backoff)
+- `--proxy` — HTTP/HTTPS proxy URL
+- `--header "Key: Value"` — extra header (repeatable)
+- `--progress` — show download progress
+- `--output {text,json,csv}` — output format (default text)
+- `--output-file` — write json/csv to a file
+
+The script makes N sequential requests, fully reads each response body, then
+prints the average request time, total downloaded volume and the download
+speed. If one request fails, the series continues and the final count of
+successful requests is printed.
 
 ## Units
 
@@ -42,15 +58,25 @@ across all requests.
 ## What is downloaded
 
 The script does not save files to disk: data is downloaded into memory
-(in chunks), bytes and time are counted, then the data is discarded.
+(in chunks), bytes and time are counted, then the data is discarded. (Unless
+`--output-file` is used for results.)
 
 What gets downloaded depends on the URL. For testing you can use a service
 like `https://httpbin.org/bytes/1000000` or a real heavy image URL.
 
-Project files:
+## Tests
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+12 unit tests + CI on GitHub Actions (Python 3.10–3.14).
+
+## Project files
 
 - `speedtest.py` — the script.
 - `README.md` — instructions and units (Russian).
 - `README.en.md` — this file (English).
 - `.gitignore` — excludes IDE/cache files.
 - `tests/` — unit tests.
+- `.github/workflows/tests.yml` — CI.
